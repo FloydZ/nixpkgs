@@ -1,0 +1,21 @@
+From a06ac1232acb40a5a0feb27d57fb8eb47fee5a41 Mon Sep 17 00:00:00 2001
+From: Floyd <you@example.com>
+Date: Thu, 4 Jan 2024 22:56:27 +0100
+Subject: [PATCH] bla
+
+---
+ ternarylogiccli | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100755 ternarylogiccli
+
+diff --git a/ternarylogiccli b/ternarylogiccli
+new file mode 100755
+index 0000000..d12ac7c
+--- /dev/null
++++ b/ternarylogiccli
+@@ -0,0 +1,2 @@
++#!/usr/bin/env bash
++python ./ternarylogiccli.py $@
+-- 
+2.42.0
+
