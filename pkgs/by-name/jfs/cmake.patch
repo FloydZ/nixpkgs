@@ -1,0 +1,213 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7b565a3..89531ec 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -177,12 +177,12 @@ message(STATUS "LLVM_DIR: \"${LLVM_DIR}\"")
+ 
+ # Find Clang
+ # FIXME: This won't work if LLVM was built with a multi-configuration generator.
+-set(LLVM_CLANG_CXX_TOOL "${LLVM_TOOLS_BINARY_DIR}/clang++")
+-if (NOT EXISTS "${LLVM_CLANG_CXX_TOOL}")
+-  message(FATAL_ERROR "Failed to find clang++ at \"${LLVM_CLANG_CXX_TOOL}\"")
+-else()
+-  message(STATUS "Found clang++ at \"${LLVM_CLANG_CXX_TOOL}\"")
+-endif()
++#set(LLVM_CLANG_CXX_TOOL "${LLVM_TOOLS_BINARY_DIR}/clang++")
++#if (NOT EXISTS "${LLVM_CLANG_CXX_TOOL}")
++#  message(FATAL_ERROR "Failed to find clang++ at \"${LLVM_CLANG_CXX_TOOL}\"")
++#else()
++#  message(STATUS "Found clang++ at \"${LLVM_CLANG_CXX_TOOL}\"")
++#endif()
+ 
+ if (LLVM_ENABLE_ASSERTIONS)
+   # Certain LLVM debugging macros only work when LLVM was built with asserts
+@@ -220,25 +220,25 @@ include("${CMAKE_SOURCE_DIR}/cmake/jfs_get_llvm_components.cmake")
+ # Find Z3
+ ################################################################################
+ # FIXME: Specify version. Need to upstream support for config setting version.
+-find_package(Z3 CONFIG)
+-set(NEEDED_Z3_VARS
+-  Z3_VERSION_MAJOR
+-  Z3_VERSION_MINOR
+-  Z3_VERSION_PATCH
+-  Z3_VERSION_TWEAK
+-  Z3_VERSION_STRING
+-  Z3_C_INCLUDE_DIRS
+-  Z3_LIBRARIES
+-)
+-foreach (vname ${NEEDED_Z3_VARS})
+-  message(STATUS "${vname}: \"${${vname}}\"")
+-  if (NOT (DEFINED "${vname}"))
+-    message(FATAL_ERROR "${vname} was not defined")
+-  endif()
+-endforeach()
+-if ("${Z3_VERSION_STRING}" VERSION_LESS "4.6")
+-  message(FATAL_ERROR "Need Z3 4.6 or newer")
+-endif()
++#find_package(Z3 CONFIG)
++#set(NEEDED_Z3_VARS
++#  Z3_VERSION_MAJOR
++#  Z3_VERSION_MINOR
++#  Z3_VERSION_PATCH
++#  Z3_VERSION_TWEAK
++#  Z3_VERSION_STRING
++#  Z3_C_INCLUDE_DIRS
++#  Z3_LIBRARIES
++#)
++#foreach (vname ${NEEDED_Z3_VARS})
++#  message(STATUS "${vname}: \"${${vname}}\"")
++#  if (NOT (DEFINED "${vname}"))
++#    message(FATAL_ERROR "${vname} was not defined")
++#  endif()
++#endforeach()
++#if ("${Z3_VERSION_STRING}" VERSION_LESS "4.6")
++#  message(FATAL_ERROR "Need Z3 4.6 or newer")
++#endif()
+ 
+ list(APPEND JFS_COMPONENT_EXTRA_INCLUDE_DIRS ${Z3_C_INCLUDE_DIRS})
+ 
+diff --git a/lib/Core/SMTLIB2Parser.cpp b/lib/Core/SMTLIB2Parser.cpp
+index 5b327c0..c73f3bc 100644
+--- a/lib/Core/SMTLIB2Parser.cpp
++++ b/lib/Core/SMTLIB2Parser.cpp
+@@ -43,17 +43,27 @@ std::shared_ptr<Query> SMTLIB2Parser::parseFile(llvm::StringRef fileName) {
+   Z3ASTHandle constraint;
+   Z3_context z3Ctx = ctx.getZ3Ctx();
+   ScopedJFSContextErrorHandler errorHandler(ctx, this);
+-  constraint = Z3ASTHandle(Z3_parse_smtlib2_file(z3Ctx, fileName.str().c_str(),
++  Z3_ast_vector v = Z3_parse_smtlib2_file(z3Ctx, fileName.str().c_str(),
+                                                  /*num_sorts=*/0,
+                                                  /*sort_names=*/0,
+                                                  /*sorts=*/0,
+                                                  /*num_decls=*/0,
+                                                  /*decl_names=*/0,
+-                                                 /*decls=*/0),
+-                           z3Ctx);
+-  if (errorCount > 0) {
+-    return nullptr;
+-  }
++                                                 /*decls=*/0);
++	Z3_ast_vector_inc_ref(z3Ctx, v);
++	unsigned sz = Z3_ast_vector_size(z3Ctx, v);
++	Z3_ast* vv = (Z3_ast *)malloc(sz);
++	for (unsigned I = 0; I < sz; ++I) vv[I] = Z3_ast_vector_get(z3Ctx, v, I);
++
++	Z3_ast result = Z3_mk_and(z3Ctx, sz, vv);
++	Z3_inc_ref(z3Ctx, result);
++	free(vv);
++	Z3_ast_vector_dec_ref(z3Ctx, v);
++
++    constraint = Z3ASTHandle(result, z3Ctx);
++    if (errorCount > 0) {
++      return nullptr;
++    }
+ 
+   // FIXME: We have no way of parsing solver options
+   // and SMT-LIB commands.
+@@ -66,14 +76,25 @@ std::shared_ptr<Query> SMTLIB2Parser::parseStr(llvm::StringRef str) {
+   Z3_context z3Ctx = ctx.getZ3Ctx();
+   Z3ASTHandle constraint;
+   ScopedJFSContextErrorHandler errorHandler(ctx, this);
+-  constraint = Z3ASTHandle(Z3_parse_smtlib2_string(z3Ctx, str.data(),
+-                                                   /*num_sorts=*/0,
+-                                                   /*sort_names=*/0,
+-                                                   /*sorts=*/0,
+-                                                   /*num_decls=*/0,
+-                                                   /*decl_names=*/0,
+-                                                   /*decls=*/0),
+-                           z3Ctx);
++
++  Z3_ast_vector v = Z3_parse_smtlib2_string(z3Ctx, str.data(),
++                                                 /*num_sorts=*/0,
++                                                 /*sort_names=*/0,
++                                                 /*sorts=*/0,
++                                                 /*num_decls=*/0,
++                                                 /*decl_names=*/0,
++                                                 /*decls=*/0);
++	Z3_ast_vector_inc_ref(z3Ctx, v);
++	unsigned sz = Z3_ast_vector_size(z3Ctx, v);
++	Z3_ast* vv = (Z3_ast *)malloc(sz);
++	for (unsigned I = 0; I < sz; ++I) vv[I] = Z3_ast_vector_get(z3Ctx, v, I);
++
++	Z3_ast result = Z3_mk_and(z3Ctx, sz, vv);
++	Z3_inc_ref(z3Ctx, result);
++	free(vv);
++	Z3_ast_vector_dec_ref(z3Ctx, v);
++
++    constraint = Z3ASTHandle(result, z3Ctx);
+   if (errorCount > 0) {
+     return nullptr;
+   }
+diff --git a/lib/Core/Z3Node.cpp b/lib/Core/Z3Node.cpp
+index 3f01741..9980f3c 100644
+--- a/lib/Core/Z3Node.cpp
++++ b/lib/Core/Z3Node.cpp
+@@ -12,6 +12,7 @@
+ #include "jfs/Core/Model.h"
+ #include "llvm/Support/raw_ostream.h"
+ #include <assert.h>
++#include <iostream>
+ 
+ namespace jfs {
+ namespace core {
+@@ -535,8 +536,8 @@ bool Z3AppHandle::getConstantAsUInt64(uint64_t* out) const {
+   if (!isConstant())
+     return false;
+ 
+-  __uint64 value = 0;
+-  static_assert(sizeof(__uint64) == sizeof(uint64_t), "size mismatch");
++  __uint64_t value = 0;
++  static_assert(sizeof(__uint64_t) == sizeof(uint64_t), "size mismatch");
+   bool success =
+       Z3_get_numeral_uint64(context, ::Z3_app_to_ast(context, node), &value);
+   if (success && out)
+@@ -660,8 +661,10 @@ Z3ApplyResultHandle::convertModelForGoal(unsigned index,
+   assert(index < getNumGoals());
+   assert(!toConvert.isNull());
+   assert(toConvert.getContext() == context);
+-  return Z3ModelHandle(
+-      Z3_apply_result_convert_model(context, node, index, toConvert), context);
++  std::cout << "TODO: " << std::endl;
++  return toConvert;
++  //return Z3ModelHandle(
++  //    Z3_apply_result_convert_model(context, node, index, toConvert), context);
+ }
+ }
+ }
+diff --git a/runtime/CMakeLists.txt b/runtime/CMakeLists.txt
+index 850704e..2cd9b1e 100644
+--- a/runtime/CMakeLists.txt
++++ b/runtime/CMakeLists.txt
+@@ -39,7 +39,7 @@ get_filename_component(LLVM_ROOT_DIR
+   "${LLVM_BIN_DIR}"
+   DIRECTORY
+ )
+-set(CLANG_RUNTIME_DIR "${LLVM_ROOT_DIR}/lib/clang")
++#set(CLANG_RUNTIME_DIR "${LLVM_ROOT_DIR}/lib/clang")
+ if (NOT (EXISTS "${CLANG_RUNTIME_DIR}"))
+   message(FATAL_ERROR
+     "Cannot find Clang runtime directory \"${CLANG_RUNTIME_DIR}\""
+diff --git a/runtime/SMTLIB/SMTLIB/Core.h b/runtime/SMTLIB/SMTLIB/Core.h
+index c97fd27..ff4ad5d 100644
+--- a/runtime/SMTLIB/SMTLIB/Core.h
++++ b/runtime/SMTLIB/SMTLIB/Core.h
+@@ -12,6 +12,7 @@
+ #define JFS_RUNTIME_SMTLIB_CORE_H
+ #include "BufferRef.h"
+ #include <stdint.h>
++#include <memory>
+ 
+ // We just use the `bool` type to model SMTLIB semantics
+ // The mapping is trivial so we don't provide many runtime
+diff --git a/runtime/SMTLIB/SMTLIB/unittests/Core/MakeFromBuffer.cpp b/runtime/SMTLIB/SMTLIB/unittests/Core/MakeFromBuffer.cpp
+index cc0096e..c9291d9 100644
+--- a/runtime/SMTLIB/SMTLIB/unittests/Core/MakeFromBuffer.cpp
++++ b/runtime/SMTLIB/SMTLIB/unittests/Core/MakeFromBuffer.cpp
+@@ -8,6 +8,7 @@
+ // See LICENSE.txt for details.
+ //
+ //===----------------------------------------------------------------------===//
++#include <memory>
+ #include "SMTLIB/Core.h"
+ #include "gtest/gtest.h"
+ 

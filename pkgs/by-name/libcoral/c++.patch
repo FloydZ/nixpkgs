@@ -1,0 +1,188 @@
+diff --git a/.bazelrc b/.bazelrc
+index 9b11d2c..640cac7 100644
+--- a/.bazelrc
++++ b/.bazelrc
+@@ -7,8 +7,9 @@ build --enable_platform_specific_config
+ 
+ build:linux --crosstool_top=@crosstool//:toolchains
+ build:linux --compiler=gcc
++build:linux --cxxopt=-std=c++17
+ 
+-build:macos --cxxopt=-std=c++14
++build:macos --cxxopt=-std=c++17
+ 
+ build:windows --incompatible_restrict_string_escapes=false
+ build:windows --cxxopt=/std:c++latest
+diff --git a/WORKSPACE b/WORKSPACE
+index 87ec4c9..3dca5a2 100644
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -14,6 +14,7 @@
+ workspace(name = "libcoral")
+ 
+ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
++load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+ 
+ # Configure libedgetpu and downstream libraries (TF and Crosstool).
+ local_repository(
+diff --git a/coral/BUILD b/coral/BUILD
+index 648ad9e..1571617 100644
+--- a/coral/BUILD
++++ b/coral/BUILD
+@@ -12,7 +12,13 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-load("//coral:model_benchmark_cases.bzl", "LSTM_MODEL_BENCHMARK_CASES", "MODEL_BENCHMARK_CASES")
++load(
++	"//coral:model_benchmark_cases.bzl", 
++	"LSTM_MODEL_BENCHMARK_CASES", 
++	"MODEL_BENCHMARK_CASES",
++    #"@flatbuffers//:build_defs.bzl",
++    #"flatbuffer_cc_library",
++)
+ 
+ package(
+     default_visibility = ["//visibility:public"],
+@@ -117,7 +123,7 @@ cc_library(
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/types:optional",
+         "@com_google_absl//absl/types:span",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@libedgetpu//tflite/public:edgetpu",
+         "@org_tensorflow//tensorflow/lite:framework",
+diff --git a/coral/examples/BUILD b/coral/examples/BUILD
+index c959b3a..7e3e74e 100644
+--- a/coral/examples/BUILD
++++ b/coral/examples/BUILD
+@@ -12,6 +12,11 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++#load(
++#    "@flatbuffers//:build_defs.bzl",
++#    "flatbuffer_cc_library",
++#)
++
+ package(
+     default_visibility = ["//visibility:public"],
+ )
+@@ -86,7 +91,7 @@ cc_binary(
+         "@com_google_absl//absl/flags:flag",
+         "@com_google_absl//absl/flags:parse",
+         "@eigen_archive//:eigen3",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@libedgetpu//tflite/public:oss_edgetpu_direct_all",  # buildcleaner: keep
+         "@org_tensorflow//tensorflow/lite:framework",
+diff --git a/coral/learn/BUILD b/coral/learn/BUILD
+index e89b98d..9be94b5 100644
+--- a/coral/learn/BUILD
++++ b/coral/learn/BUILD
+@@ -12,6 +12,11 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++#load(
++#    "@flatbuffers//:build_defs.bzl",
++#    "flatbuffer_cc_library",
++#)
++
+ package(
+     default_visibility = ["//visibility:public"],
+ )
+@@ -30,7 +35,7 @@ cc_library(
+         "@com_google_absl//absl/status",
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/types:span",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@org_tensorflow//tensorflow/lite/schema:schema_conversion_utils",
+         "@org_tensorflow//tensorflow/lite/schema:schema_fbs",
+@@ -55,7 +60,7 @@ cc_test(
+         "@com_google_absl//absl/memory",
+         "@com_google_absl//absl/status",
+         "@com_google_googletest//:gtest",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@org_tensorflow//tensorflow/lite:framework",
+         "@org_tensorflow//tensorflow/lite/schema:schema_fbs",
+@@ -79,7 +84,7 @@ cc_library(
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/strings:str_format",
+         "@com_google_absl//absl/types:span",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@org_tensorflow//tensorflow/lite/schema:schema_fbs",
+         "@org_tensorflow//tensorflow/lite/schema:schema_utils",
+@@ -107,7 +112,7 @@ cc_test(
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/types:span",
+         "@com_google_googletest//:gtest",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@org_tensorflow//tensorflow/lite:framework",
+         "@org_tensorflow//tensorflow/lite/schema:schema_fbs",
+diff --git a/coral/pose_estimation/BUILD b/coral/pose_estimation/BUILD
+index 6e4114c..9e0bfae 100644
+--- a/coral/pose_estimation/BUILD
++++ b/coral/pose_estimation/BUILD
+@@ -169,7 +169,7 @@ cc_library(
+     ],
+     deps = [
+         ":posenet_decoder",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@org_tensorflow//tensorflow/lite:framework",
+         "@org_tensorflow//tensorflow/lite/kernels:kernel_util",
+         "@org_tensorflow//tensorflow/lite/kernels/internal:tensor",
+diff --git a/coral/tools/BUILD b/coral/tools/BUILD
+index ffc6d45..d9ea1f6 100644
+--- a/coral/tools/BUILD
++++ b/coral/tools/BUILD
+@@ -12,6 +12,11 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++#load(
++#    "@flatbuffers//:build_defs.bzl",
++#    "flatbuffer_cc_library",
++#)
++
+ package(default_visibility = ["//visibility:public"])
+ 
+ licenses(["notice"])
+@@ -26,7 +31,7 @@ cc_library(
+         "@com_google_absl//absl/status",
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/strings:str_format",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@org_tensorflow//tensorflow/lite:framework",
+         "@org_tensorflow//tensorflow/lite/c:common",
+@@ -44,7 +49,7 @@ cc_binary(
+         "@com_google_absl//absl/flags:flag",
+         "@com_google_absl//absl/flags:parse",
+         "@com_google_absl//absl/strings",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+     ],
+ )
+@@ -139,7 +144,7 @@ cc_test(
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/strings:str_format",
+         "@com_google_googletest//:gtest",
+-        "@flatbuffers",
++        #"@flatbuffers",
+         "@glog",
+         "@libedgetpu//tflite/public:edgetpu",
+         "@org_tensorflow//tensorflow/lite:framework",

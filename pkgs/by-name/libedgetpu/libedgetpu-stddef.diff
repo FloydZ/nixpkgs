@@ -1,0 +1,27 @@
+diff --git a/api/allocated_buffer.h b/api/allocated_buffer.h
+index 97740f0..7bc0547 100644
+--- a/api/allocated_buffer.h
++++ b/api/allocated_buffer.h
+@@ -16,6 +16,7 @@
+ #define DARWINN_API_ALLOCATED_BUFFER_H_
+ 
+ #include <functional>
++#include <cstddef>
+ 
+ namespace platforms {
+ namespace darwinn {
+diff --git a/makefile_build/Makefile b/makefile_build/Makefile
+index ef7d290..6c7c519 100644
+--- a/makefile_build/Makefile
++++ b/makefile_build/Makefile
+@@ -10,8 +10,8 @@ BUILDROOT ?= $(MAKEFILE_DIR)/..
+ BUILDDIR := $(BUILDROOT)/out
+ TOBUILDDIR = $(addprefix $(BUILDDIR)/,$(1))
+ MKDIR = if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
+-CC=gcc
+-CXX=g++
++#CC=gcc
++#CXX=g++
+ FLATC=flatc
+ 
+ LIBEDGETPU_CFLAGS := \

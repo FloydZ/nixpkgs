@@ -1,0 +1,21 @@
+diff --git a/espresso-src/Makefile b/espresso-src/Makefile
+index 97867f5..f6b4cb8 100644
+--- a/espresso-src/Makefile
++++ b/espresso-src/Makefile
+@@ -4,6 +4,7 @@ OBJ := ${SRC:.c=.o}
+ 
+ TARGETDIR := ../bin
+ TARGET := $(TARGETDIR)/espresso
++CFLAGS := -O3 -march=native -flto
+ 
+ all: prepare $(TARGET)
+ 
+@@ -11,7 +12,7 @@ prepare:
+ 	mkdir -p $(TARGETDIR)
+ 
+ $(TARGET): $(OBJ)
+-	$(LINK.c) $(OBJ) -o $(TARGET)
++	$(LINK.c) -O3 -march=native -flto $(OBJ) -o $(TARGET)
+ 
+ clean: 
+ 	@- $(RM) -r $(TARGETDIR)

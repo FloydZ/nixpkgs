@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f2a9ea1..b953faf 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -68,13 +68,15 @@ set(PACKAGE_LIBGLIB2_MINVERSION 2.24)
+ 
+ #########################CPack PACKAGING SETUP###############################
+ set(RPM 0)
+-file(STRINGS /etc/os-release distro REGEX "^NAME=")
+-string(REGEX REPLACE "NAME=" "" distro "${distro}")
+-string(REGEX REPLACE "\"" "" distro "${distro}")
+-string(REGEX REPLACE "/" "" distro "${distro}")
+-string(REGEX REPLACE " " "" distro "${distro}")
+-file(STRINGS /etc/os-release disversion REGEX "^VERSION_ID=")
+-string(REGEX REPLACE "VERSION_ID=" "" disversion "${disversion}")
++# file(STRINGS /etc/os-release distro REGEX "^NAME=")
++# string(REGEX REPLACE "NAME=" "" distro "${distro}")
++# string(REGEX REPLACE "\"" "" distro "${distro}")
++# string(REGEX REPLACE "/" "" distro "${distro}")
++# string(REGEX REPLACE " " "" distro "${distro}")
++# file(STRINGS /etc/os-release disversion REGEX "^VERSION_ID=")
++# string(REGEX REPLACE "VERSION_ID=" "" disversion "${disversion}")
++set(distro "NixOS")
++set(disversion "23.05")
+ string(COMPARE EQUAL "${disversion}" "" result)
+ if(result)
+   #sid/rawhide with no version - use project name
