@@ -1,6 +1,6 @@
 #!/usr/bin/env bash 
 
-cd ../pkgs/by-name
+cd ./pkgs/by-name
 shopt -s nullglob
 
 for dir in ./*/
