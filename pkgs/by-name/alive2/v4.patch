@@ -1,0 +1,120 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index de2b19bd..b2d07d08 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -47,27 +47,27 @@ if (CYGWIN)
+   set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
+ endif()
+ 
+-find_package(Git REQUIRED)
+-add_custom_command(
+-  OUTPUT "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
+-  COMMAND "${CMAKE_COMMAND}" -E echo_append "#define ALIVE_VERSION_MACRO " > "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
+-  COMMAND "${GIT_EXECUTABLE}" describe --tags --dirty --always >> "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
+-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+-  VERBATIM
+-)
+-add_custom_command(
+-  DEPENDS "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
+-  OUTPUT "${PROJECT_BINARY_DIR}/version_gen.h"
+-  COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PROJECT_BINARY_DIR}/version_gen.h.tmp" "${PROJECT_BINARY_DIR}/version_gen.h"
+-  COMMAND "${CMAKE_COMMAND}" -E remove -f "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
+-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+-  VERBATIM
+-)
+-add_custom_target(
+-  generate_version ALL
+-  DEPENDS "${PROJECT_BINARY_DIR}/version_gen.h"
+-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+-)
++#find_package(Git REQUIRED)
++#add_custom_command(
++#  OUTPUT "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
++#  COMMAND "${CMAKE_COMMAND}" -E echo_append "#define ALIVE_VERSION_MACRO " > "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
++#  COMMAND "${GIT_EXECUTABLE}" describe --tags --dirty --always >> "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
++#  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
++#  VERBATIM
++#)
++#add_custom_command(
++#  DEPENDS "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
++#  OUTPUT "${PROJECT_BINARY_DIR}/version_gen.h"
++#  COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PROJECT_BINARY_DIR}/version_gen.h.tmp" "${PROJECT_BINARY_DIR}/version_gen.h"
++#  COMMAND "${CMAKE_COMMAND}" -E remove -f "${PROJECT_BINARY_DIR}/version_gen.h.tmp"
++#  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
++#  VERBATIM
++#)
++#add_custom_target(
++#  generate_version ALL
++#  DEPENDS "${PROJECT_BINARY_DIR}/version_gen.h"
++#  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
++#)
+ 
+ find_package(ZLIB)
+ find_package(Z3 4.8.5 REQUIRED)
+@@ -124,7 +124,7 @@ set(TOOLS_SRCS
+ add_library(tools STATIC ${TOOLS_SRCS})
+ 
+ set(UTIL_SRCS
+-  "${PROJECT_BINARY_DIR}/version_gen.h"
++	# "${PROJECT_BINARY_DIR}/version_gen.h"
+   util/version.cpp
+   util/compiler.cpp
+   util/config.cpp
+@@ -142,7 +142,7 @@ set(UTIL_SRCS
+ )
+ 
+ add_library(util STATIC ${UTIL_SRCS})
+-add_dependencies(util generate_version)
++#add_dependencies(util generate_version)
+ 
+ set(ALIVE_LIBS ir smt tools util)
+ 
+diff --git a/smt/ctx.cpp b/smt/ctx.cpp
+index 43d65035..f17d5d71 100644
+--- a/smt/ctx.cpp
++++ b/smt/ctx.cpp
+@@ -5,6 +5,7 @@
+ #include "smt/smt.h"
+ #include "util/config.h"
+ #include <cstdlib>
++#include <cstdint>
+ #include <iostream>
+ #include <string_view>
+ #include <z3.h>
+diff --git a/smt/smt.h b/smt/smt.h
+index 2af69b70..12c6317e 100644
+--- a/smt/smt.h
++++ b/smt/smt.h
+@@ -4,6 +4,7 @@
+ // Distributed under the MIT license that can be found in the LICENSE file.
+ 
+ #include <string>
++#include <cstdint>
+ 
+ namespace smt {
+ 
+diff --git a/tools/alive_lexer.h b/tools/alive_lexer.h
+index 1fc9098d..17c1ac97 100644
+--- a/tools/alive_lexer.h
++++ b/tools/alive_lexer.h
+@@ -5,6 +5,7 @@
+ 
+ #include <string>
+ #include <string_view>
++#include <cstdint>
+ 
+ namespace tools {
+ 
+diff --git a/util/version.cpp b/util/version.cpp
+index fb0bd49c..e78b5bce 100644
+--- a/util/version.cpp
++++ b/util/version.cpp
+@@ -2,7 +2,7 @@
+ // Distributed under the MIT license that can be found in the LICENSE file.
+ 
+ #include "util/version.h"
+-#include "version_gen.h"
++#define ALIVE_VERSION_MACRO v4
+ 
+ #define xstr(s) str(s)
+ #define str(s) #s
