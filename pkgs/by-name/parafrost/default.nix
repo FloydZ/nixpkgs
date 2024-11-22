@@ -8,18 +8,19 @@
 }:
 stdenv.mkDerivation{
   name = "ParaFROST";
-  pname = "ParaFROST";
-  version = "v0.4.0";
+  pname = "parafrost";
+  version = "v3.4.2";
   
   src = fetchgit {
     url = "https://github.com/muhos/ParaFROST/";
-    rev = "89cd346cc55d106d5d36bac54277f218ab000d4b";
-    sha256 = "sha256-ekN3F+xvgqxbgyTlEztmW/z32UAObIFvBPXHbQ4LjP0=";
+    rev = "23dc65781ff892e9fe75265d707541b21e6d1439";
+    sha256 = "sha256-wOQPtg9ET9MaM+nftEcS7CmS5V0IkCKANMn1xU/XJVI=";
   };
 
   nativeBuildInputs = [ 
     gnumake
     gcc11
+    cudatoolkit
   ];
 
   buildInputs = [ 
@@ -28,17 +29,21 @@ stdenv.mkDerivation{
 
   buildPhase = ''
     export CUDA_PATH=${cudatoolkit}
-    ./install.sh -c
-    ./install.sh -g
+    bash install.sh -c
+    bash install.sh -g
   '';
 
   installPhase = ''
     mkdir -p $out/lib
     mkdir -p $out/bin
+    mkdir -p $out/dev
    
-    cp ./build/cpu/parafrost $out/bin/parafrost_cpu
-    cp ./build/gpu/parafrost $out/bin
-    cp ./build/gpu/libparafrost.a $out/lib
+    cp ./build/cpu/bin/parafrost $out/bin/parafrost_cpu
+    cp ./build/cpu/lib/libparafrost.a $out/lib/libparafrost.a
+
+    cp ./build/gpu/bin/parafrost $out/bin
+    cp ./build/gpu/lib/libparafrost.a $out/lib
+    # cp ./build/gpu/include/* $out/dev/*
   '';
   
   meta = {
