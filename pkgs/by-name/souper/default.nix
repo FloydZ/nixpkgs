@@ -108,7 +108,7 @@ stdenv.mkDerivation rec {
 
     mkdir -p build
     cd build
-    cmake .. -DLLVM_CXXFLAGS="$(llvm-config --cppflags) -fno-exceptions -fno-rtti -Wno-deprecated-enum-enum-conversion" -DLLVM_LIBS="$(llvm-config --libs) $(llvm-config --system-libs)" -DLLVM_LDFLAGS="$(llvm-config --ldflags)" -DLLVM_BINDIR="${clang_18}/bin" -DCMAKE_SKIP_BUILD_RPATH=ON -DZSTD_LIBRARY_DIR=${z3_4_12.lib}
+    cmake .. -DLLVM_CXXFLAGS="$(llvm-config --cppflags) -fno-exceptions -fno-rtti -Wno-deprecated-enum-enum-conversion" -DLLVM_LIBS="$(llvm-config --libs) $(llvm-config --system-libs)" -DLLVM_LDFLAGS="$(llvm-config --ldflags)" -DLLVM_BINDIR="${clang_18}/bin" -DCMAKE_SKIP_BUILD_RPATH=ON -DZSTD_LIBRARY_DIR=${z3_4_12.lib} -DSOUPER_PASS=$out/lib/libsouperPass.so -DPROFILE_LIBRARY=$out/lib/libprofileRuntime.a -DZ3=${z3_4_12}/bin/z3 -DZ3_INCLUDE_DIR=${z3_4_12.lib}/include 
   '';
   
   installPhase = ''
