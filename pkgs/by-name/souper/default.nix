@@ -2,20 +2,12 @@
 , stdenv
 , fetchgit
 , callPackage
-, z3_4_12, klee, hiredis, cmake
-#needed for llvm
-, llvmPackages_17
+, z3_4_12, hiredis, cmake
+, llvmPackages_18
+, clang_18
 , gtest
 }:
 let
-  # z3_4_12 = z3_4_12.overrideAttrs (oldAttrs: rec {
-  #   src = fetchgit {
-  #     url = "https://github.com/Z3Prover/z3.git";
-  #     rev = "z3-4.12.2";
-  #     sha256 = "sha256-DTgpKEG/LtCGZDnicYvbxG//JMLv25VHn/NaF307JYA=";
-  #   };
-  # });
-
   # we only need the source 
   customKLEE_src = fetchgit {
     url = "https://github.com/regehr/klee.git";
@@ -25,27 +17,14 @@ let
 
   customAlive2 =  callPackage ./../alive2/default.nix { };
   customAlive2_src = fetchgit {
-    # v7
-    #url = "https://github.com/manasij7479/alive2/";
-    #rev = "c003606d9cb013453f7352b0ca25d22d73148685";
-    #hash = "sha256-F9GcDEuMQE42GUFdUFU5SA4tmRDYc7ChOQpBK1j+hVc=";
-
-    # v4
     url = "https://github.com/manasij7479/alive2/";
-    rev = "v4";
-    hash = "sha256-GdNVU+pzOb8J0Mvq8yUVwPsUPqKOvn/2RfqoRrzfvPk=";
+
+    # v7
+    rev = "c003606d9cb013453f7352b0ca25d22d73148685";
+    hash = "sha256-F9GcDEuMQE42GUFdUFU5SA4tmRDYc7ChOQpBK1j+hVc=";
   };
 
-
-  #customLLVM = llvmPackages_17.llvm.overrideAttrs (oldAttrs: rec {
-  #  src = fetchgit {
-  #    url = "https://github.com/regehr/llvm-project.git";
-  #    rev = "disable-peepholes-llvmorg-17.0.3-1";
-  #    sha256 = "sha256-3nokr6MLhCySlJmmRNvPXFm3scKHgOjucFCFhHof+HU=";
-  #  };
-  #});
-
-  customLLVM = llvmPackages_17.llvm.overrideAttrs (oldAttrs: rec {
+  customLLVM = llvmPackages_18.llvm.overrideAttrs (oldAttrs: rec {
     patches = oldAttrs.patches ++ [ ./llvm_souper.patch ];
     doCheck = false;
   });
@@ -53,8 +32,8 @@ let
   customHiredis = hiredis.overrideAttrs (oldAttrs: rec {
     src = fetchgit {
       url = "https://github.com/redis/hiredis.git";
-      rev = "869f3d0ef1513dd0258ad7190c9914df16dcc4a4";
-      sha256 = "sha256-9YeoAquVa+GSyzaZMJ2iI3M20HUXshJ3zjGEnRoYTuc=";
+      rev = "19cfd60d92da1fdb958568cdd7d36264ab14e666";
+      sha256 = "sha256-1ujX/h/ytBGnLbae/vry8jXz6TiTLKs9l9l+qGO/cVo=";
     };
   });
 in
@@ -65,8 +44,8 @@ stdenv.mkDerivation rec {
   
   src = fetchgit {
     url = "https://github.com/google/souper";
-    rev = "a4fed064aee8f172f6e8c9e5569cb7429ff03a80";
-    sha256 = "sha256-OVHLJwNWmgvCAe1DbHFDzWP/NRBcG3ojELPz5I0na+M=";
+    rev = "963d4df436f3dc0b039cc0e47ada0577a26f5c4e";
+    sha256 = "sha256-eMarjCDEW6XgBKIsHinPIi4NbnkC2z4DEvKyAqt9ruM=";
   };
 
   patches = [
@@ -82,8 +61,8 @@ stdenv.mkDerivation rec {
   
   buildInputs = [
     # customLLVM
-    llvmPackages_17.bintools
-    llvmPackages_17.llvm
+    llvmPackages_18.bintools
+    llvmPackages_18.llvm
     alive2
     z3_4_12
     hiredis
@@ -129,12 +108,9 @@ stdenv.mkDerivation rec {
 
     mkdir -p build
     cd build
-    cmake .. -DLLVM_CXXFLAGS="$(llvm-config --cppflags) -fno-exceptions -fno-rtti -Wno-deprecated-enum-enum-conversion" -DLLVM_LIBS="$(llvm-config --libs) $(llvm-config --system-libs)" -DLLVM_LDFLAGS="$(llvm-config --ldflags)" -DCMAKE_SKIP_BUILD_RPATH=ON
+    cmake .. -DLLVM_CXXFLAGS="$(llvm-config --cppflags) -fno-exceptions -fno-rtti -Wno-deprecated-enum-enum-conversion" -DLLVM_LIBS="$(llvm-config --libs) $(llvm-config --system-libs)" -DLLVM_LDFLAGS="$(llvm-config --ldflags)" -DLLVM_BINDIR="${clang_18}/bin" -DCMAKE_SKIP_BUILD_RPATH=ON -DZSTD_LIBRARY_DIR=${z3_4_12.lib}
   '';
   
-  #buildPhase = ''
-  #'';
-
   installPhase = ''
     mkdir -p $out/bin
     mkdir -p $out/lib
@@ -144,7 +120,7 @@ stdenv.mkDerivation rec {
     cp sclang $out/bin
     cp sclang++ $out/bin
     cp souper $out/bin
-    cp souper-check $out/bin
+    #cp souper-check $out/bin
     cp souper-check-gdb.py $out/bin
     cp souper-interpret $out/bin
     cp souper2llvm $out/bin
@@ -171,8 +147,8 @@ stdenv.mkDerivation rec {
     cp libsouperTool.a $out/lib
     cp libkleeExpr.a  $out/lib
 
-    cp -r ${z3_4_12.lib}/lib/* $out/bin
-    cp -r ${customHiredis.out}/lib/* $out/bin
+    cp -r ${z3_4_12.lib}/lib/* $out/lib
+    cp -r ${customHiredis.out}/lib/* $out/lib
   '';
   
   meta = {

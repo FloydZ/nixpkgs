@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b74f122..daa6f07 100644
+index e0652ba..842a8ae 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,7 +1,7 @@
@@ -16,16 +16,16 @@ index b74f122..daa6f07 100644
    set(LLVM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
  endif()
 -set(LLVM_CONFIG_EXECUTABLE ${CMAKE_SOURCE_DIR}/third_party/llvm-${LLVM_BUILD_TYPE}-install/bin/llvm-config)
++#set(LLVM_CONFIG_EXECUTABLE ${CMAKE_SOURCE_DIR}/third_party/llvm-${LLVM_BUILD_TYPE}-install/bin/llvm-config)
 +set(LLVM_CONFIG_EXECUTABLE_ llvm-config)
 +find_path(
 +	LLVM_CONFIG_EXECUTABLE
 +    NAMES "llvm-config"
 +)
-+
  if(NOT EXISTS ${LLVM_CONFIG_EXECUTABLE})
    message(FATAL_ERROR "llvm-config could not be found!")
  endif()
-@@ -22,33 +27,33 @@ execute_process(
+@@ -26,42 +31,42 @@ execute_process(
    OUTPUT_STRIP_TRAILING_WHITESPACE
  )
  
@@ -77,7 +77,7 @@ index b74f122..daa6f07 100644
 +#)
 +#set(LLVM_LIBS "${LLVM_LIBS} ${LLVM_SYSTEM_LIBS}")
 +#string(STRIP ${LLVM_LIBS} LLVM_LIBS)
-+
++#
 +#execute_process(
 +#  COMMAND ${LLVM_CONFIG_EXECUTABLE} --ldflags
 +#  OUTPUT_VARIABLE LLVM_LDFLAGS
@@ -85,8 +85,22 @@ index b74f122..daa6f07 100644
 +#)
  
  set(PASS_LDFLAGS "${LLVM_LDFLAGS}")
+ set(LLVM_LDFLAGS "${LLVM_LDFLAGS} -L ${ZSTD_LIBRARY_DIR}")
  
-@@ -280,17 +285,17 @@ add_executable(souper
+-execute_process(
+-  COMMAND ${LLVM_CONFIG_EXECUTABLE} --bindir
+-  OUTPUT_VARIABLE LLVM_BINDIR
+-  OUTPUT_STRIP_TRAILING_WHITESPACE
+-)
++#execute_process(
++#  COMMAND ${LLVM_CONFIG_EXECUTABLE} --bindir
++#  OUTPUT_VARIABLE LLVM_BINDIR
++#  OUTPUT_STRIP_TRAILING_WHITESPACE
++#)
+ 
+ execute_process(
+   COMMAND ${LLVM_CONFIG_EXECUTABLE} --obj-root
+@@ -285,21 +290,21 @@ add_executable(souper
    tools/souper.cpp
  )
  
@@ -101,21 +115,29 @@ index b74f122..daa6f07 100644
 -add_executable(parser-test
 -  tools/parser-test.cpp
 -)
-+# add_executable(internal-solver-test
-+#   tools/internal-solver-test.cpp
-+# )
-+# 
-+# add_executable(lexer-test
-+#   tools/lexer-test.cpp
-+# )
-+# 
-+# add_executable(parser-test
-+#   tools/parser-test.cpp
-+# )
+-
+-add_executable(souper-check
+-  tools/souper-check.cpp
+-)
++#add_executable(internal-solver-test
++#  tools/internal-solver-test.cpp
++#)
++#
++#add_executable(lexer-test
++#  tools/lexer-test.cpp
++#)
++#
++#add_executable(parser-test
++#  tools/parser-test.cpp
++#)
++#
++#add_executable(souper-check
++#  tools/souper-check.cpp
++#)
  
- add_executable(souper-check
-   tools/souper-check.cpp
-@@ -308,33 +313,33 @@ add_executable(souper2llvm
+ add_executable(souper-interpret
+   tools/souper-interpret.cpp
+@@ -313,33 +318,33 @@ add_executable(souper2llvm
    tools/souper2llvm.cpp
  )
  
@@ -173,17 +195,16 @@ index b74f122..daa6f07 100644
  
  configure_file(
    ${CMAKE_SOURCE_DIR}/utils/gen-xfer-funcs/run_n.pl.in
-@@ -366,7 +371,8 @@ configure_file(
+@@ -371,7 +376,7 @@ configure_file(
    COPYONLY
  )
  
 -foreach(target souper internal-solver-test lexer-test parser-test souper-check count-insts
-+# internal-solver-test lexer-test parser-test 
-+foreach(target souper souper-check count-insts
++foreach(target souper count-insts
                 souper2llvm souper-interpret
                 souperExtractor souperInfer souperInst souperKVStore souperParser
                 souperSMTLIB2 souperTool souperPass souperPassProfileAll kleeExpr
-@@ -374,10 +380,10 @@ foreach(target souper internal-solver-test lexer-test parser-test souper-check c
+@@ -379,10 +384,10 @@ foreach(target souper internal-solver-test lexer-test parser-test souper-check c
    set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${LLVM_CXXFLAGS}")
    target_include_directories(${target} PRIVATE "${LLVM_INCLUDEDIR}")
  endforeach()
@@ -198,17 +219,18 @@ index b74f122..daa6f07 100644
  
  # static
  target_link_libraries(kleeExpr ${LLVM_LIBS} ${LLVM_LDFLAGS})
-@@ -397,19 +403,19 @@ target_link_libraries(souperPassProfileAll ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${
+@@ -402,19 +407,19 @@ target_link_libraries(souperPassProfileAll ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${
  
  # executables
  target_link_libraries(souper souperExtractor souperKVStore souperParser souperSMTLIB2 souperTool kleeExpr ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} ${Z3_LIBRARY})
 -target_link_libraries(internal-solver-test souperSMTLIB2)
 -target_link_libraries(lexer-test souperParser)
 -target_link_libraries(parser-test souperParser)
+-target_link_libraries(souper-check souperTool souperExtractor souperKVStore souperSMTLIB2 souperParser ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} ${Z3_LIBRARY})
 +#target_link_libraries(internal-solver-test souperSMTLIB2)
 +#target_link_libraries(lexer-test souperParser)
 +#target_link_libraries(parser-test souperParser)
- target_link_libraries(souper-check souperTool souperExtractor souperKVStore souperSMTLIB2 souperParser ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} ${Z3_LIBRARY})
++#target_link_libraries(souper-check souperTool souperExtractor souperKVStore souperSMTLIB2 souperParser ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} ${Z3_LIBRARY})
  target_link_libraries(souper-interpret souperTool souperExtractor souperKVStore souperSMTLIB2 souperParser ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} ${Z3_LIBRARY})
  target_link_libraries(count-insts souperParser)
  target_link_libraries(souper2llvm souperParser souperCodegen)
@@ -227,7 +249,7 @@ index b74f122..daa6f07 100644
  
  set(TEST_SYNTHESIS "ON" CACHE STRING "Enable additional, computationally intensive synthesis tests")
  set(TEST_LONG_DURATION_SYNTHESIS "" CACHE STRING "Enable long duration (> 10 min) synthesis tests")
-@@ -429,10 +435,10 @@ configure_file(
+@@ -434,10 +439,10 @@ configure_file(
    ${CMAKE_BINARY_DIR}/souper-check-gdb.py
  )
  
@@ -242,7 +264,7 @@ index b74f122..daa6f07 100644
  
  # we want assertions even in release mode!
  string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-@@ -458,3 +464,7 @@ configure_file(${CMAKE_SOURCE_DIR}/utils/sclang.in ${CMAKE_BINARY_DIR}/sclang @O
+@@ -463,3 +468,7 @@ configure_file(${CMAKE_SOURCE_DIR}/utils/sclang.in ${CMAKE_BINARY_DIR}/sclang @O
  configure_file(${CMAKE_SOURCE_DIR}/utils/sclang.in ${CMAKE_BINARY_DIR}/sclang++ @ONLY)
  
  add_subdirectory(docs)

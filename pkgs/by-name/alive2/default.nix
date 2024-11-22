@@ -21,18 +21,18 @@ in stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://github.com/manasij7479/alive2/";
     # v4
-    rev = "v4";
-    hash = "sha256-GdNVU+pzOb8J0Mvq8yUVwPsUPqKOvn/2RfqoRrzfvPk=";
+    #rev = "v4";
+    #hash = "sha256-GdNVU+pzOb8J0Mvq8yUVwPsUPqKOvn/2RfqoRrzfvPk=";
     
     # v7
     #rev = "v7";
-    #rev = "c003606d9cb013453f7352b0ca25d22d73148685";
-    #hash = "sha256-F9GcDEuMQE42GUFdUFU5SA4tmRDYc7ChOQpBK1j+hVc=";
+    rev = "c003606d9cb013453f7352b0ca25d22d73148685";
+    hash = "sha256-F9GcDEuMQE42GUFdUFU5SA4tmRDYc7ChOQpBK1j+hVc=";
   };
 
   patches = [
-    # ./v7.patch
-    ./v4.patch
+    ./v7.patch
+    # ./v4.patch
   ]; 
 
   nativeBuildInputs = [ cmake ];
