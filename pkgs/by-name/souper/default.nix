@@ -78,12 +78,6 @@ stdenv.mkDerivation rec {
   ];
 
   configurePhase = ''
-    #mkdir -pv third_party/llvm-release-install/lib
-    #cp -r ${llvm} third_party/llvm-release-install
-    #cp -r ${customLLVM.lib}/lib/* third_party/llvm-release-install
-    #ls -R third_party/llvm-release-install
-
-
     # prepare alive
     mkdir -pv third_party/alive2-build
     cp -r ${customAlive2_src} third_party/alive2 
@@ -114,8 +108,6 @@ stdenv.mkDerivation rec {
   installPhase = ''
     mkdir -p $out/bin
     mkdir -p $out/lib
-
-    ls -R .
 
     cp sclang $out/bin
     cp sclang++ $out/bin
