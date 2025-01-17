@@ -5,7 +5,7 @@
     { pkgs, ... }:
     {
       packages = {
-        example2 = pkgs.callPackage ../pkgs/example2 { };
+        intrinsics-viewer = pkgs.callPackage ../pkgs/by-name/intrinsics-viewer { };
       };
     };
 }
