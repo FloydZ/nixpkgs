@@ -11,7 +11,7 @@ To use this repository as an overlay in another project, follow these steps:
 
    ```nix
    inputs = {
-       custom-nixpkgs.url = "https://github.com/FloydZ/nixpkgs";
+       custom-nixpkgs.url = "github:FloydZ/nixpkgs";
    };
    ```
 
