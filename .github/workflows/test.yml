@@ -14,6 +14,6 @@ jobs:
         nix_path: nixpkgs=channel:nixos-23.11
         extra_nix_config: |
           extra-platforms = aarch64-linux riscv64-linux i686-linux
-    - uses: DeterminateSystems/magic-nix-cache-action@v8
+    - uses: DeterminateSystems/magic-nix-cache-action@v9
 
     - run: ./.github/build.sh
