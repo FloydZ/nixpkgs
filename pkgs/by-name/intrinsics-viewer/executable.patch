@@ -3,8 +3,9 @@ new file mode 100755
 index 0000000..a93a6e7
 --- /dev/null
 +++ b/intrinsics-viewer
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,5 @@
 +#!/usr/bin/env bash
 +SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 +PORT=8082
-+python3 -m http.server -b 192.168.1.1 -d ${SCRIPT_DIR} ${PORT}
++# python3 -m http.server -b 192.168.1.1 -d ${SCRIPT_DIR} ${PORT}
++python3 -m http.server -d ${SCRIPT_DIR} ${PORT}
