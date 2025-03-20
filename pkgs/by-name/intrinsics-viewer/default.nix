@@ -11,8 +11,8 @@ stdenv.mkDerivation rec {
   
   src = fetchgit {
     url = "https://github.com/dzaima/intrinsics-viewer";
-    rev = "d6b2f113f5d60aab7a846e1a530b9670bda293cd";
-    sha256 = "sha256-oogjyWQjcHTw7c3kXNO9PEp02X9Z+3VCsvyinBePNfk=";
+    rev = "465095a51d7b21286385db9f8d41ce1ef52381f3";
+    sha256 = "sha256-L4CTUaZPo9C1iXnyb3CIYXL/xTRStKwakI0+oj0oksE=";
   };
 
   # different sources for intrinsics
@@ -26,19 +26,27 @@ stdenv.mkDerivation rec {
   };
   arm_intrinsics = fetchurl {
     url = "https://developer.arm.com/architectures/instruction-sets/intrinsics/data/intrinsics.json";
-    hash = "sha256-PuzwyH6clfVOUBis2kNnC+g5NfW03Cib0FR8pbB5k+U=";
+    hash = "sha256-xnpr/3l6hFAtR4/HY2nK+OeinIOpWXFaJu85paqMFaI=";
   };
   arm_operations = fetchurl {
     url = "https://developer.arm.com/architectures/instruction-sets/intrinsics/data/operations.json";
     hash = "sha256-b9Bhr800/+2x3OJ5PzzXCQ8w/jI+agXlR/yYVYkQTsY=";
   };
-  rvv_base = fetchurl {
-    url = "https://github.com/dzaima/rvv-intrinsic-doc/releases/download/v7/rvv_base.json";
-    hash = "sha256-oY+xY8bU2EbW4+sVmcV9ZktPGAzXN19aXqkdFqzZwXY=";
+  rvv_intrinsics = fetchurl {
+    url = "https://github.com/dzaima/rvv-intrinsic-doc/releases/download/v10/rvv-intrinsics-v10.json";
+    hash = "sha256-gzbmuMvEw46zXZGXQV60Or+P4hgP+xj0XSFDpuSqb8o=";
   };
   v_spec = fetchurl {
     url = "https://github.com/dzaima/riscv-v-spec/releases/download/v1/v-spec.html";
     hash = "sha256-bjhQsqdhuaCpZFqKzAc3kM7Hhzb0RdKzU5+PVo0gvPE=";
+  };
+  v_crypto = fetchurl {
+    url = "https://github.com/dzaima/riscv-v-spec/releases/download/v1/riscv-crypto-spec-vector.html";
+    hash = "sha256-2AKSNEhGSr4VMUd/BurRa+Qqh1xn6yQushbBE6Hz5/o=";
+  };
+  wasm = fetchurl {
+    url = "https://github.com/dzaima/dzaima.github.io/releases/download/wasm-v1/wasm-1.json";
+    hash = "sha256-Q01DsA1ENOpDdRmPrbDO7UjQefTXR2CD0vlWZaLfR7I=";
   };
   nativeBuildInputs = [ 
     python3
@@ -52,7 +60,6 @@ stdenv.mkDerivation rec {
    ./executable.patch
   ];
   installPhase = ''
-    ls -R .
     mkdir -p $out/bin
     mkdir -p $out/bin/data
 
@@ -60,11 +67,13 @@ stdenv.mkDerivation rec {
     cp intrinsics-viewer $out/bin
 
     cp ${intel_perf2} $out/bin/data/intel_perf2-1.js
-    cp ${intel_intrinsics} $out/bin/data/intel_intrinsics-1.xml
+    cp ${intel_intrinsics} $out/bin/data/intel_intrinsics-2.xml
     cp ${arm_intrinsics} $out/bin/data/arm_intrinsics-1.json
     cp ${arm_operations} $out/bin/data/arm_operations-1.json
-    cp ${rvv_base} $out/bin/data/rvv_base-5.json
+    cp ${rvv_intrinsics} $out/bin/data/rvv-intrinsics-v10.json
     cp ${v_spec} $out/bin/data/v-spec.html
+    cp ${v_crypto} $out/bin/data/riscv-crypto-spec-vector.html
+    cp ${wasm} $out/bin/data/wasm-1.json.html
     '';
   
   meta = {
