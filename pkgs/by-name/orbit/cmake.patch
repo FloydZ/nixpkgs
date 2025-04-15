@@ -1,0 +1,43 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5d3d22613..0530da910 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -24,8 +24,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_LIBRARY_OUTPUT_DIRECTO
+ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+ 
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -mavx2 -mbmi -mbmi2")
++set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx -mavx2 -mbmi -mbmi2")
++
+ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+-  add_compile_options(-Werror=all
++  add_compile_options(# -Werror=all
+                       -Werror=abstract-final-class
+                       -Werror=float-conversion
+                       -Werror=format=2
+@@ -46,7 +49,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+   endif()
+ 
+ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+-  add_compile_options(-Werror=all
++  add_compile_options(#-Werror=all
+                       # gcc does not behave consistently here; what is fine with gcc9 fails with gcc10
+                       # and vice versa, see https://github.com/google/orbit/issues/1624 for details.
+                       -Wno-stringop-truncation
+diff --git a/build.sh b/build.sh
+index f857318fd..70ed50c9e 100755
+--- a/build.sh
++++ b/build.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ # Copyright (c) 2020 The Orbit Authors. All rights reserved.
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+@@ -76,4 +76,4 @@ for profile in ${profiles[@]}; do
+   if [[ $profile == default_* ]]; then
+     echo "The build finished successfully. Start Orbit with ./build_$profile/bin/Orbit!"
+   fi
+-done
+\ No newline at end of file
++done

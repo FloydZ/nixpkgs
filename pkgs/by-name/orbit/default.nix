@@ -1,7 +1,6 @@
 { lib
 , stdenv
 , fetchgit
-, callPackage
 , cmake
 , abseil-cpp
 , pkg-config
@@ -11,8 +10,7 @@
 , capstone
 , libGL
 , libGLU
-, qtbase
-# , qmake
+, qt5
 , libssh2
 , vulkan-volk
 , vulkan-headers
@@ -21,16 +19,9 @@
 , python3
 , clang_15
 , llvm_15
+, clang
+, git
 }:
-let
-  #customHiredis = hiredis.overrideAttrs (oldAttrs: rec {
-  #  src = fetchgit {
-  #    url = "https://github.com/redis/hiredis.git";
-  #    rev = "19cfd60d92da1fdb958568cdd7d36264ab14e666";
-  #    sha256 = "sha256-1ujX/h/ytBGnLbae/vry8jXz6TiTLKs9l9l+qGO/cVo=";
-  #  };
-  #});
-in
 stdenv.mkDerivation rec {
   name = "orbit";
   pname = "orbit";
@@ -39,11 +30,11 @@ stdenv.mkDerivation rec {
   src = fetchgit {
     url = "https://github.com/google/orbit/";
     rev = "eb93af556ef91f6f69d98a5a12f1dd4a8b60d376";
-    sha256 = "";
+    sha256 = "sha256-XJSa8Y8HC4aVqMW3TATi+gIS7uInc4pWvOUzYYD/ch4=";
   };
 
-  patches = [
-    ./souper.patch
+  patches = [ 
+    ../cmake.patch
   ];
   
   enableParallelBuilding = true;
@@ -51,6 +42,7 @@ stdenv.mkDerivation rec {
   
   buildInputs = [
     # customLLVM
+    clang
     clang_15
     llvm_15
     abseil-cpp
@@ -59,7 +51,6 @@ stdenv.mkDerivation rec {
     grpc 
     protobuf_21
     capstone
-    qtbase
     libssh2
     vulkan-volk
     vulkan-headers
@@ -67,16 +58,25 @@ stdenv.mkDerivation rec {
     python3
     cmake
     gtest
+    git
   ];
 
   nativeBuildInputs = [ 
-    clang_15
     libGL 
     libGLU
-
+    qt5.qtbase
   ];
 
-  WITH_VULKAN="OFF";
+  dontWrapQtApps = true;
+  cmakeFlags = [
+    "-DWITH_VULKAN=OFF"
+    "-DCMAKE_C_COMPILER=clang"
+    "-DCMAKE_CXX_COMPILER=clang++"
+    "-DCMAKE_C_FLAGS=-Wno-error"
+    "-DCMAKE_CXX_FLAGS=-Wno-error"
+  ];
+
+  # QT_QPA_PLATFORM_PLUGIN_PATH="${qt5.qtbase.bin}/lib/qt-${qt5.qtbase.version}/plugins/platforms";
   # configurePhase = '' '';
   # installPhase = '' '';
   
