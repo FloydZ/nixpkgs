@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
   };
 
   patches = [ 
-    ../cmake.patch
+    ./cmake.patch
   ];
   
   enableParallelBuilding = true;
