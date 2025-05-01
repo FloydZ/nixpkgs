@@ -1,16 +1,17 @@
 { pkgs, lib, stdenv, fetchgit }:
 stdenv.mkDerivation {
-  pname = "flatter";
+  pname = "blaster";
   version = "0.0.1";
 
   src = fetchgit {
-    url = "https://github.com/keeganryan/flatter";
-    rev = "13c4ef0f0abe7ad5db88b19a9196c00aa5cf067c";
-    sha256 = "sha256-k0FcIJARaXi602eqMSum+q1IaCs30Xi0hB/ZNNkXruw=";
+    url = "https://github.com/ludopulles/BLASter";
+    rev = "c6b9328bcf4ab6709d8f94f1bdd9e4b5491cd082";
+    sha256 = "sha256-quyJSl9eLEQXjDPAFTisZqd3HvqXH/6Z7Uh1bukSM0E=";
   };
 
   nativeBuildInputs = with pkgs; [
     fplll
+    python3
   ];
 
   buildInputs = with pkgs; [
@@ -28,8 +29,8 @@ stdenv.mkDerivation {
   #'';
   
   meta = with lib; {
-    description = "Fast lattice reduction";
-    homepage = "https://github.com/keeganryan/flatter"; 
+    description = " Fast lattice reduction using segmentation, multithreading, Seysen reduction and BLAS ";
+    homepage = "https://github.com/ludopulles/BLASter";
     license = licenses.mit;
     platforms = platforms.linux;
   };
