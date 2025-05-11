@@ -17,7 +17,7 @@ let
   };
 
   rfl-core = buildPythonPackage {
-    pname = "RFL-core";
+    pname = "rfl-core";
     version = "v1.4.0";
     pyproject = true;
     src = "${rflSrc}/src/core";
@@ -25,7 +25,7 @@ let
   };
 
   rfl-authentication = buildPythonPackage {
-    pname = "RFL-authentication";
+    pname = "rfl-authentication";
     version = "v1.4.0";
     pyproject = true;
     src = "${rflSrc}/src/authentication";
@@ -39,20 +39,45 @@ let
     ];
   };
 
-  rfl-settings = buildPythonPackage {
-    pname = "RFL-authentication";
+  rfl-permissions = buildPythonPackage {
+    pname = "rfl-permissions";
     version = "v1.4.0";
     pyproject = true;
-    src = "${rflSrc}/src/authentication";
+    src = "${rflSrc}/src/permissions";
+    nativeBuildInputs = [
+      setuptools 
+    ];
+    propagatedBuildInputs = with python3Packages; [
+      rfl-core
+      rfl-authentication
+      pyyaml
+    ];
+  };
+
+  rfl-settings = buildPythonPackage {
+    pname = "rfl-settings";
+    version = "v1.4.0";
+    pyproject = true;
+    src = "${rflSrc}/src/settings";
     nativeBuildInputs = [ setuptools ];
+    propagatedBuildInputs = with python3Packages; [
+      rfl-core
+      pyyaml
+    ];
   };
 
   rfl-web = buildPythonPackage {
-    pname = "RFL-authentication";
+    pname = "rfl-web";
     version = "v1.4.0";
     pyproject = true;
-    src = "${rflSrc}/src/authentication";
+    src = "${rflSrc}/src/web";
     nativeBuildInputs = [ setuptools ];
+    propagatedBuildInputs = with python3Packages; [
+      rfl-core
+      rfl-permissions
+      rfl-authentication
+      flask
+    ];
   };
 
   rfl-log = buildPythonPackage {
@@ -61,8 +86,10 @@ let
     pyproject = true;
     src = "${rflSrc}/src/log";
     nativeBuildInputs = [ setuptools ];
+    propagatedBuildInputs = with python3Packages; [
+      rfl-core
+    ];
   };
-
 in
 python3.pkgs.buildPythonApplication rec {
   pname = "slurm-web";
@@ -78,20 +105,20 @@ python3.pkgs.buildPythonApplication rec {
 
   nativeBuildInputs = with python3Packages; [
     setuptools
-    flask
-    requests
     rfl-core
     rfl-log
     rfl-authentication
     rfl-settings
     rfl-web
 
-    prometheus-client
-    aiohttp
     pytest
   ];
 
-  buildInputs = [ 
+  buildInputs = with python3Packages; [ 
+    flask
+    requests
+    prometheus-client
+    aiohttp
   ];
   
   meta = with lib; {
