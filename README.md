@@ -1,5 +1,8 @@
 Original code from [drupol](https://github.com/drupol/my-own-nixpkgs/tree/main/templates/my-own-nixpkgs)
-
+Remember: you can always build a package locally via:
+```bash
+ nix-build -E 'with import <nixpkgs> { }; callPackage ./default.nix { }'
+```
 
 ### Integrating Your Repository as an Overlay
 
