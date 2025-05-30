@@ -1,6 +1,5 @@
 { lib
 , stdenv
-, callPackage
 , fetchFromGitHub
 , pkg-config
 , cmake
@@ -9,9 +8,6 @@
 , zstd
 , microsoft-gsl
 }:
-let 
-  # assemblyline =  callPackage ./../assemblyline/default.nix { };
-in
 stdenv.mkDerivation rec {
   name = "SEAL";
   pname = "seal";
@@ -42,11 +38,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
   ];
-
-    # TODO fix the double "//" in the pkg-config file
-  fixupPhase = '' 
-      echo test
-  '';
   
   meta = {
     description = "Microsoft SEAL is an easy-to-use and powerful homomorphic encryption library.";
