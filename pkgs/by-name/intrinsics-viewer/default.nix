@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
   };
   arm_intrinsics = fetchurl {
     url = "https://developer.arm.com/architectures/instruction-sets/intrinsics/data/intrinsics.json";
-    hash = "sha256-xnpr/3l6hFAtR4/HY2nK+OeinIOpWXFaJu85paqMFaI=";
+    hash = "sha256-dLHlEconDQ1BvLASo3YuuxviDqw3PyBnvaimMPdk2gI=";
   };
   arm_operations = fetchurl {
     url = "https://developer.arm.com/architectures/instruction-sets/intrinsics/data/operations.json";
