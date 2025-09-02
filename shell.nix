@@ -1,15 +1,18 @@
 with import <nixpkgs> {};
 let
-  # Import your custom nixpkgs overlay from GitHub
-  myPkgs = import (pkgs.fetchFromGitHub {
-    owner = "FloydZ";
-    repo = "nixpkgs";
-    rev = "9ccf8be";
-    sha256 = "sha256-/EXYeJ1PCqa7Y8QhJiM5/4+9Sk378Qt95xit5/pwCng=";
-  }) { inherit pkgs; };
+  system = builtins.currentSystem;
+  # myPkgs = import (pkgs.fetchFromGitHub {
+  #   owner = "FloydZ";
+  #   repo = "nixpkgs";
+  #   rev = "9ccf8be";
+  #   sha256 = "sha256-/EXYeJ1PCqa7Y8QhJiM5/4+9Sk378Qt95xit5/pwCng=";
+  # }) { inherit pkgs; };
+  flake = builtins.getFlake "github:FloydZ/nixpkgs/9ccf8be";
+  myPkgs = flake.packages.${system};
 in
 stdenv.mkDerivation {
   name = "test";
+  src = ./.;
   buildInputs = with pkgs; [
     # Standard development tools
     git
