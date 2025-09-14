@@ -5,6 +5,9 @@
     { pkgs, ... }:
     {
       packages = {
+        slothy              = pkgs.callPackage ../pkgs/by-name/pythonpackages/slothy {};
+
+
         alive2              = pkgs.callPackage ../pkgs/by-name/alive2 {};
         assemblyline        = pkgs.callPackage ../pkgs/by-name/assemblyline {};
         audiblez            = pkgs.callPackage ../pkgs/by-name/audiblez {};
