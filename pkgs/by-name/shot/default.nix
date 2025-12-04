@@ -3,7 +3,7 @@
 , callPackage
 , fetchgit
 , cmake
-, CoinMP
+, coinmp
 , coin-utils
 }:
 let
@@ -21,13 +21,13 @@ in stdenv.mkDerivation rec {
     cmake 
   ];
   buildInputs = [
-    CoinMP
+    coinmp
     coin-utils
   ];
 
   cmakeFlags = [
     "-DHAS_CBC=ON"
-    "-DCBC_DIR=${CoinMP}"
+    "-DCBC_DIR=${coinmp}"
     "-DCMAKE_SKIP_BUILD_RPATH=ON"
   ];
 
