@@ -2,7 +2,7 @@
 , stdenv
 , fetchgit
 , callPackage
-, z3_4_12, hiredis, cmake
+, z3, hiredis, cmake
 , llvmPackages_18
 , clang_18
 , gtest
@@ -36,6 +36,8 @@ let
       sha256 = "sha256-1ujX/h/ytBGnLbae/vry8jXz6TiTLKs9l9l+qGO/cVo=";
     };
   });
+
+  customZ3 = z3;
 in
 stdenv.mkDerivation rec {
   name = "souper";
@@ -53,7 +55,7 @@ stdenv.mkDerivation rec {
   ];
   
   enableParallelBuilding = true;
-  z3="${z3_4_12}";
+  z3="${customZ3}";
   alive2="${customAlive2}";
   klee="${customKLEE_src}";
   llvm="${customLLVM}";
@@ -64,14 +66,14 @@ stdenv.mkDerivation rec {
     llvmPackages_18.bintools
     llvmPackages_18.llvm
     alive2
-    z3_4_12
+    customZ3
     hiredis
     gtest
   ];
 
   nativeBuildInputs = [ 
     customLLVM
-    z3_4_12
+    customZ3
     hiredis
     gtest
     cmake
@@ -85,8 +87,8 @@ stdenv.mkDerivation rec {
 
     # prepare Z3 
     mkdir -pv third_party/z3-install
-    cp -r ${z3_4_12}/bin third_party/z3-install
-    cp -r ${z3_4_12.lib}/* third_party/z3-install
+    cp -r ${customZ3}/bin third_party/z3-install
+    cp -r ${customZ3.lib}/* third_party/z3-install
 
     # prepare hiredis
     mkdir -pv third_party/hiredis-install/include/hiredis
@@ -102,7 +104,7 @@ stdenv.mkDerivation rec {
 
     mkdir -p build
     cd build
-    cmake .. -DLLVM_CXXFLAGS="$(llvm-config --cppflags) -fno-exceptions -fno-rtti -Wno-deprecated-enum-enum-conversion" -DLLVM_LIBS="$(llvm-config --libs) $(llvm-config --system-libs)" -DLLVM_LDFLAGS="$(llvm-config --ldflags)" -DLLVM_BINDIR="${clang_18}/bin" -DCMAKE_SKIP_BUILD_RPATH=ON -DZSTD_LIBRARY_DIR=${z3_4_12.lib} -DSOUPER_PASS=$out/lib/libsouperPass.so -DPROFILE_LIBRARY=$out/lib/libprofileRuntime.a -DZ3=${z3_4_12}/bin/z3 -DZ3_INCLUDE_DIR=${z3_4_12.lib}/include 
+    cmake .. -DLLVM_CXXFLAGS="$(llvm-config --cppflags) -fno-exceptions -fno-rtti -Wno-deprecated-enum-enum-conversion" -DLLVM_LIBS="$(llvm-config --libs) $(llvm-config --system-libs)" -DLLVM_LDFLAGS="$(llvm-config --ldflags)" -DLLVM_BINDIR="${clang_18}/bin" -DCMAKE_SKIP_BUILD_RPATH=ON -DZSTD_LIBRARY_DIR=${customZ3.lib} -DSOUPER_PASS=$out/lib/libsouperPass.so -DPROFILE_LIBRARY=$out/lib/libprofileRuntime.a -DZ3=${customZ3}/bin/z3 -DZ3_INCLUDE_DIR=${customZ3.lib}/include 
   '';
   
   installPhase = ''
@@ -139,7 +141,7 @@ stdenv.mkDerivation rec {
     cp libsouperTool.a $out/lib
     cp libkleeExpr.a  $out/lib
 
-    cp -r ${z3_4_12.lib}/lib/* $out/lib
+    cp -r ${customZ3.lib}/lib/* $out/lib
     cp -r ${customHiredis.out}/lib/* $out/lib
   '';
   
