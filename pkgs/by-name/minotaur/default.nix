@@ -12,6 +12,7 @@
 , hiredis
 , gtest
 , python3
+, llvmPackages_20
 }:
 let
   #customAlive2 =  callPackage ./../alive2/default.nix { };
@@ -21,18 +22,25 @@ let
     hash = "sha256-LL6/Epn6iHQJGKb8PX+U6zvXK/WTlvOIJPr6JuGRsSU=";
   };
 
-  cLLVM = fetchgit {
-      url = "https://github.com/llvm/llvm-project.git";
-      rev = "llvmorg-21.1.8";
-      sha256 = "sha256-pgd8g9Yfvp7abjCCKSmIn1smAROjqtfZaJkaUkBSKW0=";
-  };
-  #cLLVM = llvmPackages.llvm.overrideAttrs (oldAttrs: rec {
-  #  src = fetchgit {
+  #cLLVM = fetchgit {
   #    url = "https://github.com/llvm/llvm-project.git";
   #    rev = "llvmorg-21.1.8";
   #    sha256 = "sha256-pgd8g9Yfvp7abjCCKSmIn1smAROjqtfZaJkaUkBSKW0=";
-  #  };
-  #});
+  #};
+  cLLVM = llvmPackages_20.llvm.overrideAttrs (oldAttrs: rec {
+    src = fetchgit {
+     url = "https://github.com/llvm/llvm-project.git";
+     rev = "llvmorg-21.1.8";
+     sha256 = "sha256-pgd8g9Yfvp7abjCCKSmIn1smAROjqtfZaJkaUkBSKW0=";
+    #  url = "https://github.com/llvm/llvm-project.git";
+    #  rev = "llvmorg-20.1.8";
+    #  sha256 = "sha256-pgd8g9Yfvp7abjCCKSmIn1smAROjqtfZaJkaUkBSKW0=";
+    };
+    #patches = oldAttrs.patches ++ [
+    patches = [
+      ./llvm-main-minotaur.patch
+    ];
+  });
 
   cZ3 = z3.overrideAttrs (oldAttrs: rec {
     src = fetchgit {
@@ -57,8 +65,7 @@ stdenv.mkDerivation rec {
 
   z3="${cZ3}";
   alive2="${cAlive2}";
-  llvm="${cLLVM}";
-  
+
   buildInputs = [
     cLLVM
     cmake
@@ -71,40 +78,44 @@ stdenv.mkDerivation rec {
     python3
   ];
 
+
   nativeBuildInputs = [ 
   ];
 
   configurePhase = ''
     # prepare Z3 
-    ls -al
-    mkdir -pv tmp/z3
-    mkdir -pv tmp/z3/build
-    mkdir -pv tmp/z3-install
-    cp -r ${cZ3.src}/* tmp/z3 
-    cd tmp/z3
-    ls -al
-    cmake -S ./ -B ./build -G Ninja  \
-      -DCMAKE_BUILD_TYPE=Release              \
-      -DCMAKE_INSTALL_PREFIX=tmp/z3-install   \
-      -DZ3_BUILD_TEST_EXECUTABLES=OFF         \
-      -DZ3_BUILD_EXECUTABLE=OFF
-    cmake --build ./build --target install
-    cd ../..
+    #ls -al
+    #mkdir -pv tmp/z3
+    #mkdir -pv tmp/z3/build
+    #mkdir -pv tmp/z3-install
+    #cp -r ${cZ3.src}/* tmp/z3 
+    #cd tmp/z3
+    #cmake -S ./ -B ./build -G Ninja  \
+    #  -DCMAKE_BUILD_TYPE=Release              \
+    #  -DCMAKE_INSTALL_PREFIX=tmp/z3-install   \
+    #  -DZ3_BUILD_TEST_EXECUTABLES=OFF         \
+    #  -DZ3_BUILD_EXECUTABLE=OFF
+    #cmake --build ./build --target install
+    #cd ../..
 
     # prepare llvm
-    mkdir -pv tmp/llvm
-    mkdir -pv tmp/llvm/build
-    mkdir -pv tmp/llvm-install
-    cp -r ${cLLVM}/* tmp/llvm
-    cd tmp/llvm
-    git apply ../../llvm-main-minotaur.patch
-    cmake -G Ninja -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_EH=ON    \
-      -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release         \
-      -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_ENABLE_ASSERTIONS=ON   \
-      -DLLVM_ENABLE_PROJECTS="llvm;clang"                       \
-      ../llvm-install 
-    ninja
-    cd ../..
+    #mkdir -pv tmp/llvm
+    #mkdir -pv tmp/llvm/build
+    #mkdir -pv tmp/llvm-install
+    #cp -r ${cLLVM.src}/* tmp/llvm
+    #chmod -R 666 ./tmp/llvm
+    #cd tmp/llvm
+    #ls -al
+    ## git apply ../../llvm-main-minotaur.patch
+    #patch -p1 < ../../llvm-main-minotaur.patch 
+    #cmake -S${cLLVM.src} ./ -B ./build -G Ninja  \
+    #  -DLLVM_ENABLE_RTTI=ON -DLLVM_ENABLE_EH=ON    \
+    #  -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release         \
+    #  -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_ENABLE_ASSERTIONS=ON   \
+    #  -DLLVM_ENABLE_PROJECTS="llvm;clang"                       \
+    #  ../llvm-install 
+    #ninja
+    #cd ../..
 
     # prepare alive
     mkdir -pv tmp/alive2
@@ -112,7 +123,7 @@ stdenv.mkDerivation rec {
     mkdir -pv tmp/alive2-install
     cd tmp/alive2
     cp -r ${cAlive2}/* tmp/alive2
-    cmake -G Ninja -DLLVM_DIR=$HOME/llvm/build/lib/cmake/llvm \
+    cmake -G Ninja -DLLVM_DIR=${cLLVM.src}/ \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TV=1          \
       ../alive2-install
     ninja
