@@ -8,18 +8,35 @@
   cmake,
   ninja,
   nix-update-script,
-  llvmPackages_20,
+  llvmPackages_git,
+  llvmPackages_21,
 }:
 let 
-  llvm = llvmPackages_20.override {
+  # llvmPkgs = llvmPackages_git.override {
+  #   config = {
+  #     enableRtti = true;
+  #     enableEh   = true;
+  #   };
+  # };
+  # llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
+  #   patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
+  #   doCheck = false;
+  # });
+
+
+  llvmPkgs = llvmPackages_21.override {
     config = {
       enableRtti = true;
       enableEh = true;
+      buildLlvmDylib = true;
+      linkLlvmDylib = true;
     };
-    patches = [
-      ./llvm-main-minotaur.patch
-    ];
   };
+  llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
+    patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
+    doCheck = false;
+  });
+  #llvm = llvmPkgs.llvm;
 in
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "alive2";
@@ -40,10 +57,13 @@ clangStdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     z3
     hiredis
-    llvm.llvm
+    llvm
   ];
   strictDeps = true;
 
+  CXXFLAGS = toString [
+    "-I${llvm.dev}/include"
+  ];
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail '-Werror' "" \
@@ -52,17 +72,17 @@ clangStdenv.mkDerivation (finalAttrs: {
 
   env = {
     ALIVE2_HOME = "$PWD";
-    LLVM2_HOME = "${llvm.llvm}";
+    LLVM2_HOME = "${llvm}";
     LLVM2_BUILD = "$LLVM2_HOME/build";
   };
 
-  preBuild = ''
-    mkdir -p build
-    '';
-
   cmakeFlags = [
     "-DBUILD_TV=1 "
-  ];
+    ];
+
+  preBuild = ''
+    mkdir -p build
+  '';
 
   installPhase = ''
     runHook preInstall
