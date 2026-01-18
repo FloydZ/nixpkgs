@@ -1,81 +1,90 @@
-{ lib
-, stdenv
-, callPackage
-, fetchgit
-, cmake
-, clang
-, llvm
-, re2c
-, z3
-, gperftools
-, sqlite
-, lit
-, git
+{
+  lib,
+  clangStdenv,
+  fetchFromGitHub,
+  re2c,
+  z3,
+  hiredis,
+  cmake,
+  ninja,
+  nix-update-script,
+  llvmPackages_20,
 }:
-
-let
-in stdenv.mkDerivation rec {
+let 
+  llvm = llvmPackages_20.override {
+    config = {
+      enableRtti = true;
+      enableEh = true;
+    };
+    patches = [
+      ./llvm-main-minotaur.patch
+    ];
+  };
+in
+clangStdenv.mkDerivation (finalAttrs: {
   pname = "alive2";
-  version = "7";
+  version = "21.0";
 
-  src = fetchgit {
-    url = "https://github.com/manasij7479/alive2/";
-    # v4
-    #rev = "v4";
-    #hash = "sha256-GdNVU+pzOb8J0Mvq8yUVwPsUPqKOvn/2RfqoRrzfvPk=";
-    
-    # v7
-    #rev = "v7";
-    rev = "c003606d9cb013453f7352b0ca25d22d73148685";
-    hash = "sha256-F9GcDEuMQE42GUFdUFU5SA4tmRDYc7ChOQpBK1j+hVc=";
+  src = fetchFromGitHub {
+    owner = "AliveToolkit";
+    repo = "alive2";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-LL6/Epn6iHQJGKb8PX+U6zvXK/WTlvOIJPr6JuGRsSU=";
   };
 
-  patches = [
-    ./v7.patch
-    # ./v4.patch
-  ]; 
-
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    llvm
-    clang
-    z3
+  nativeBuildInputs = [
+    cmake
+    ninja
     re2c
-    gperftools
-    sqlite
-    lit
-    git
   ];
+  buildInputs = [
+    z3
+    hiredis
+    llvm.llvm
+  ];
+  strictDeps = true;
 
-  cmakeFlags = let
-    onOff = val: if val then "ON" else "OFF";
-  in [
-    #"-DZ3_LIBRARIES=${z3}/lib/libz3.so"
-    #"-DZ3_INCLUDE_DIR=${z3}/include"
-    "-DCMAKE_BUILD_TYPE=Release"
-    "-DBUILD_TESTING=OFF"
-    "-DLLVM_ENABLE_RTTI=ON"
-    "-DLLVM_ENABLE_EH=ON"
-    "-DBUILD_SHARED_LIBS=ON"
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail '-Werror' "" \
+      --replace-fail 'find_package(Git REQUIRED)' ""
+  '';
+
+  env = {
+    ALIVE2_HOME = "$PWD";
+    LLVM2_HOME = "${llvm.llvm}";
+    LLVM2_BUILD = "$LLVM2_HOME/build";
+  };
+
+  preBuild = ''
+    mkdir -p build
+    '';
+
+  cmakeFlags = [
+    "-DBUILD_TV=1 "
   ];
 
   installPhase = ''
+    runHook preInstall
     mkdir -p $out/bin
     mkdir -p $out/lib
-    mkdir -p $out/dev
-    cp ./alive $out/bin
-    # cp ./alive-jobserver $out/bin
-    cp libir.a $out/lib
-    cp libsmt.a $out/lib
-    cp libtools.a $out/lib
-    cp libutil.a $out/lib
+    cp alive $out/bin/
+    cp alive-jobserver $out/bin/
+    rm -rf $out/bin/CMakeFiles $out/bin/*.o
+    cp *.a $out/lib
+    cp tools/* $out/lib
+    runHook postInstall
   '';
 
-  meta = with lib; {
-    description = "Alive2 consists of several libraries and tools for analysis and verification of LLVM code and transformations. Alive2 includes the following libraries:";
+  passthru.updateScript = nix-update-script { };
+
+  meta = {
+    description = "Automatic verification of LLVM optimizations";
     homepage = "https://github.com/AliveToolkit/alive2";
-    license = licenses.ncsa;
-    platforms = [ "x86_64-linux" ];
-    # maintainers = with maintainers; [ ];
+    license = lib.licenses.mit;
+    platforms = lib.platforms.all;
+    maintainers = with lib.maintainers; [ shogo ];
+    teams = [ lib.teams.ngi ];
+    mainProgram = "alive";
   };
-}
+})
