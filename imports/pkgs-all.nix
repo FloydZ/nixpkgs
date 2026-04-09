@@ -28,6 +28,7 @@
         libsafec            = pkgs.callPackage ../pkgs/by-name/libsafec {};
         measuresuite        = pkgs.callPackage ../pkgs/by-name/measuresuite {};
         metasearch2         = pkgs.callPackage ../pkgs/by-name/metasearch2 {};
+        minotaur            = pkgs.callPackage ../pkgs/by-name/minotaur2 {};
         nanobench           = pkgs.callPackage ../pkgs/by-name/nanobench {};
         not-perf            = pkgs.callPackage ../pkgs/by-name/not-perf {};
         oneapi              = pkgs.callPackage ../pkgs/by-name/oneapi {};
