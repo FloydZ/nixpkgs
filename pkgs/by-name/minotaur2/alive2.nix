@@ -9,21 +9,8 @@
   ninja,
   nix-update-script,
   llvmPackages_git,
-  llvmPackages_21,
 }:
 let 
-  # llvmPkgs = llvmPackages_git.override {
-  #   config = {
-  #     enableRtti = true;
-  #     enableEh   = true;
-  #   };
-  # };
-  # llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
-  #   patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
-  #   doCheck = false;
-  # });
-
-
   llvmPkgs = llvmPackages_git.override {
     config = {
       enableRtti = true;
@@ -35,6 +22,7 @@ let
   llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
     patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
     doCheck = false;
+    checkPhase = '' '';
   });
   #llvm = llvmPkgs.llvm;
 in

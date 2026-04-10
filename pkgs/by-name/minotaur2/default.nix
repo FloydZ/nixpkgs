@@ -33,6 +33,7 @@ let
   llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
     patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
     doCheck = false;
+    checkPhase = '' '';
   });
 
   # this is currently `llvmPackages_23`
