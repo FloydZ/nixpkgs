@@ -33,7 +33,13 @@ let
   llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
     patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
     doCheck = false;
-    checkPhase = '' '';
+    checkPhase = ''true'';
+    cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
+      "-DLLVM_INCLUDE_TESTS=OFF"
+      "-DLLVM_BUILD_TESTS=OFF"
+      "-DLLVM_INCLUDE_BENCHMARKS=OFF"
+      "-DLLVM_INCLUDE_EXAMPLES=OFF"
+    ];
   });
 
   # this is currently `llvmPackages_23`

@@ -23,6 +23,12 @@ let
     patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
     doCheck = false;
     checkPhase = '' '';
+    cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
+      "-DLLVM_INCLUDE_TESTS=OFF"
+      "-DLLVM_BUILD_TESTS=OFF"
+      "-DLLVM_INCLUDE_BENCHMARKS=OFF"
+      "-DLLVM_INCLUDE_EXAMPLES=OFF"
+    ];
   });
   #llvm = llvmPkgs.llvm;
 in
