@@ -1,8 +1,6 @@
 { lib
 , stdenv
-, clangStdenv
 , fetchFromGitHub
-, fetchgit
 , cmake
 , ninja
 , z3
@@ -12,14 +10,10 @@
 , perlPackages
 , re2c
 , callPackage
-#, llvmPackages_23
-#, llvmPackages_21
 , llvmPackages_git
 }:
 let 
   alive2 =  callPackage ./alive2.nix { };
-  #llvmA =  callPackage ./llvm_23.nix { };
-  #llvmPackages_23 = llvmA.llvmPackages_23;
 
   # this works with `_21`
   llvmPkgs = llvmPackages_git.override {
@@ -33,7 +27,8 @@ let
   llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
     patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
     doCheck = false;
-    checkPhase = ''true'';
+    doInstallCheck = false;
+    checkPhase = '''';
     cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
       "-DLLVM_INCLUDE_TESTS=OFF"
       "-DLLVM_BUILD_TESTS=OFF"
@@ -41,24 +36,11 @@ let
       "-DLLVM_INCLUDE_EXAMPLES=OFF"
     ];
   });
-
-  # this is currently `llvmPackages_23`
-  #llvm = llvmPackages_git.llvm.overrideAttrs (oldAttrs: rec {
-  #  release_version = "23.0.0";
-  #  version = "23.0.0";
-  #  src = fetchgit {
-  #    url = "https://github.com/llvm/llvm-project.git";
-  #    rev = "1c4e03aa2619339248c77b0f0ebd564e766415ef";
-  #    sha256 = "sha256-WaVmQu0YFaypbEMH2y5KX7M5Qn/BXaQFdExfcJI2yo4=";
-  #  };
-
-  #  patches =
-  #    (lib.filter (p:
-  #      let s = toString p;
-  #      in !(lib.hasInfix "gnu-install-dirs-polly.patch" s
-  #        || lib.hasInfix "polly" s)) oldAttrs.patches)
-  #    ++ [ ./llvm-main-minotaur.patch ];
-  #});
+  clang = llvmPkgs.clang.overrideAttrs (oldAttrs: rec {
+    doCheck = false;
+    doInstallCheck = false;
+    checkPhase = '''';
+  });
 in
 stdenv.mkDerivation rec {
   pname = "minotaur-toolkit-minotaur";
@@ -81,7 +63,7 @@ stdenv.mkDerivation rec {
     hiredis
     alive2
     llvm
-    llvmPkgs.clang
+    clang
   ];
 
   buildInputs = [
@@ -89,7 +71,7 @@ stdenv.mkDerivation rec {
     hiredis
     z3
     llvm
-    llvmPkgs.clang
+    clang
   ];
 
   NIX_CFLAGS_COMPILE = toString [
@@ -112,30 +94,30 @@ stdenv.mkDerivation rec {
       --replace-fail 'find_package(Git REQUIRED)' ""
     
     substituteInPlace scripts/minotaur-cc.in \
-      --replace-fail '@LLVM_BINARY_DIR@' "${llvmPkgs.clang}"
+      --replace-fail '@LLVM_BINARY_DIR@' "${clang}"
     substituteInPlace scripts/minotaur-cc.in \
       --replace-fail '@ONLINE_PASS@' "$out/lib/online.so"
 
 
     substituteInPlace scripts/opt-minotaur.sh.in \
-      --replace-fail '@LLVM_BINARY_DIR@' "${llvmPkgs.clang}"
+      --replace-fail '@LLVM_BINARY_DIR@' "${clang}"
     substituteInPlace scripts/opt-minotaur.sh.in \
       --replace-fail '@ONLINE_PASS@' "$out/lib/online.so"
 
     substituteInPlace scripts/infer-cut.sh.in \
-      --replace-fail '@LLVM_BINARY_DIR@' "${llvmPkgs.clang}"
+      --replace-fail '@LLVM_BINARY_DIR@' "${clang}"
     substituteInPlace scripts/infer-cut.sh.in \
       --replace-fail '@ONLINE_PASS@' "$out/lib/online.so"
 
 
     substituteInPlace scripts/slice-cc.in \
-      --replace-fail '@LLVM_BINARY_DIR@' "${llvmPkgs.clang}"
+      --replace-fail '@LLVM_BINARY_DIR@' "${clang}"
     substituteInPlace scripts/cache-dump.in \
-      --replace-fail '@LLVM_BINARY_DIR@' "${llvmPkgs.clang}"
+      --replace-fail '@LLVM_BINARY_DIR@' "${clang}"
     substituteInPlace scripts/cache-infer.in \
-      --replace-fail '@LLVM_BINARY_DIR@' "${llvmPkgs.clang}"
+      --replace-fail '@LLVM_BINARY_DIR@' "${clang}"
     substituteInPlace scripts/get-cost.in \
-      --replace-fail '@LLVM_BINARY_DIR@/bin/clang' "${llvmPkgs.clang}/bin/clang"
+      --replace-fail '@LLVM_BINARY_DIR@/bin/clang' "${clang}/bin/clang"
     substituteInPlace scripts/get-cost.in \
       --replace-fail '@LLVM_BINARY_DIR@/bin/llvm-mca' "${llvmPkgs.llvm}/bin/llvm-mca"
     substituteInPlace include/cost-command.h.in \

@@ -22,6 +22,7 @@ let
   llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
     patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
     doCheck = false;
+    doInstallCheck = false;
     checkPhase = '' '';
     cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
       "-DLLVM_INCLUDE_TESTS=OFF"
@@ -30,7 +31,6 @@ let
       "-DLLVM_INCLUDE_EXAMPLES=OFF"
     ];
   });
-  #llvm = llvmPkgs.llvm;
 in
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "alive2";
