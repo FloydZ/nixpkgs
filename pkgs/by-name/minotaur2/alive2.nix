@@ -11,26 +11,27 @@
   llvmPackages_git,
 }:
 let 
-  llvmPkgs = llvmPackages_git.override {
-    config = {
-      enableRtti = true;
-      enableEh = true;
-      buildLlvmDylib = true;
-      linkLlvmDylib = true;
-    };
-  };
-  llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
-    patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
-    doCheck = false;
-    doInstallCheck = false;
-    checkPhase = '' '';
-    cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
-      "-DLLVM_INCLUDE_TESTS=OFF"
-      "-DLLVM_BUILD_TESTS=OFF"
-      "-DLLVM_INCLUDE_BENCHMARKS=OFF"
-      "-DLLVM_INCLUDE_EXAMPLES=OFF"
-    ];
-  });
+  #llvmPkgs = llvmPackages_git.override {
+  #  config = {
+  #    enableRtti = true;
+  #    enableEh = true;
+  #    buildLlvmDylib = true;
+  #    linkLlvmDylib = true;
+  #  };
+  #};
+  #llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
+  #  patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
+  #  doCheck = false;
+  #  doInstallCheck = false;
+  #  checkPhase = '' '';
+  #  cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
+  #    "-DLLVM_INCLUDE_TESTS=OFF"
+  #    "-DLLVM_BUILD_TESTS=OFF"
+  #    "-DLLVM_INCLUDE_BENCHMARKS=OFF"
+  #    "-DLLVM_INCLUDE_EXAMPLES=OFF"
+  #  ];
+  #});
+  llvm = llvmPackages_git;
 in
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "alive2";
