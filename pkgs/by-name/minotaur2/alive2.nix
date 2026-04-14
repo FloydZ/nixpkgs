@@ -11,27 +11,34 @@
   llvmPackages_git,
 }:
 let 
-  #llvmPkgs = llvmPackages_git.override {
-  #  config = {
-  #    enableRtti = true;
-  #    enableEh = true;
-  #    buildLlvmDylib = true;
-  #    linkLlvmDylib = true;
-  #  };
-  #};
-  #llvm = llvmPkgs.llvm.overrideAttrs (oldAttrs: rec {
-  #  patches = oldAttrs.patches ++ [ ./llvm-main-minotaur.patch ];
-  #  doCheck = false;
-  #  doInstallCheck = false;
-  #  checkPhase = '' '';
-  #  cmakeFlags = (oldAttrs.cmakeFlags or []) ++ [
-  #    "-DLLVM_INCLUDE_TESTS=OFF"
-  #    "-DLLVM_BUILD_TESTS=OFF"
-  #    "-DLLVM_INCLUDE_BENCHMARKS=OFF"
-  #    "-DLLVM_INCLUDE_EXAMPLES=OFF"
-  #  ];
-  #});
-  llvm = llvmPackages_git;
+  llvmPkgs =
+    (llvmPackages_git.override {
+      config = {
+        enableRtti = true;
+        enableEh = true;
+        buildLlvmDylib = true;
+        linkLlvmDylib = true;
+        # These two may or may not be used by the current llvmPackages_git,
+        # but we’ll force the CMake flags below regardless.
+        enableTests = false;
+        doCheck = false;
+      };
+    }).overrideScope (final: prev: {
+      # THIS is where the real LLVM CMake build happens:
+      libllvm = prev.libllvm.overrideAttrs (old: {
+        patches = (old.patches or []) ++ [ ./llvm-main-minotaur.patch ];
+        doCheck = false;
+        cmakeFlags = (old.cmakeFlags or []) ++ [
+          "-DLLVM_INCLUDE_TESTS=OFF"
+          "-DLLVM_BUILD_TESTS=OFF"
+          "-DLLVM_INCLUDE_BENCHMARKS=OFF"
+          "-DLLVM_INCLUDE_EXAMPLES=OFF"
+        ];
+      });
+    });
+
+  llvm  = llvmPkgs.llvm;
+  clang = llvmPkgs.clang;
 in
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "alive2";

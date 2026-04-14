@@ -13,7 +13,7 @@
 , llvmPackages_git
 }:
 let 
-  alive2 =  perl;#callPackage ./alive2.nix { };
+  alive2 = callPackage ./alive2.nix { };
 
 
   llvmPkgs =
