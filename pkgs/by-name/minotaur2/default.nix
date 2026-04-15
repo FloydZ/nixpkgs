@@ -1,5 +1,6 @@
 { lib
 , stdenv
+, callPackage
 , fetchFromGitHub
 , cmake
 , ninja
@@ -9,41 +10,39 @@
 , perl
 , perlPackages
 , re2c
-, callPackage
 , llvmPackages_git
 }:
 let 
   alive2 = callPackage ./alive2.nix { };
-
-
-  llvmPkgs =
-    (llvmPackages_git.override {
-      config = {
-        enableRtti = true;
-        enableEh = true;
-        buildLlvmDylib = true;
-        linkLlvmDylib = true;
-        # These two may or may not be used by the current llvmPackages_git,
-        # but we’ll force the CMake flags below regardless.
-        enableTests = false;
-        doCheck = false;
-      };
-    }).overrideScope (final: prev: {
-      # THIS is where the real LLVM CMake build happens:
-      libllvm = prev.libllvm.overrideAttrs (old: {
-        patches = (old.patches or []) ++ [ ./llvm-main-minotaur.patch ];
-        doCheck = false;
-        cmakeFlags = (old.cmakeFlags or []) ++ [
-          "-DLLVM_INCLUDE_TESTS=OFF"
-          "-DLLVM_BUILD_TESTS=OFF"
-          "-DLLVM_INCLUDE_BENCHMARKS=OFF"
-          "-DLLVM_INCLUDE_EXAMPLES=OFF"
-        ];
-      });
-    });
-
-  llvm  = llvmPkgs.llvm;
-  clang = llvmPkgs.clang;
+#  llvmPkgs =
+#    (llvmPackages_git.override {
+#      config = {
+#        enableRtti = true;
+#        enableEh = true;
+#        buildLlvmDylib = true;
+#        linkLlvmDylib = true;
+#        # These two may or may not be used by the current llvmPackages_git,
+#        # but we’ll force the CMake flags below regardless.
+#        enableTests = false;
+#        doCheck = false;
+#      };
+#    }).overrideScope (final: prev: {
+#      # THIS is where the real LLVM CMake build happens:
+#      libllvm = prev.libllvm.overrideAttrs (old: {
+#        patches = (old.patches or []) ++ [ ./llvm-main-minotaur.patch ];
+#        doCheck = false;
+#        cmakeFlags = (old.cmakeFlags or []) ++ [
+#          "-DLLVM_INCLUDE_TESTS=OFF"
+#          "-DLLVM_BUILD_TESTS=OFF"
+#          "-DLLVM_INCLUDE_BENCHMARKS=OFF"
+#          "-DLLVM_INCLUDE_EXAMPLES=OFF"
+#        ];
+#      });
+#    });
+# llvm  = llvmPkgs.llvm;
+# clang = llvmPkgs.clang;
+  llvm  = llvmPackages_git.llvm;
+  clang = llvmPackages_git.clang;
 in
 stdenv.mkDerivation rec {
   pname = "minotaur-toolkit-minotaur";
@@ -122,7 +121,7 @@ stdenv.mkDerivation rec {
     substituteInPlace scripts/get-cost.in \
       --replace-fail '@LLVM_BINARY_DIR@/bin/clang' "${clang}/bin/clang"
     substituteInPlace scripts/get-cost.in \
-      --replace-fail '@LLVM_BINARY_DIR@/bin/llvm-mca' "${llvmPkgs.llvm}/bin/llvm-mca"
+      --replace-fail '@LLVM_BINARY_DIR@/bin/llvm-mca' "${llvm}/bin/llvm-mca"
     substituteInPlace include/cost-command.h.in \
       --replace-fail '@CMAKE_BINARY_DIR@' "$out/bin"
 
