@@ -50,8 +50,8 @@ in
 
     package = mkOption {
       type = types.package;
-      default = pkgs.nbd-vram or (pkgs.callPackage ./package.nix { });
-      defaultText = literalExpression "pkgs.callPackage ./package.nix { }";
+      default = pkgs.nbd-vram or (pkgs.callPackage ./default.nix { });
+      defaultText = literalExpression "pkgs.callPackage ./default.nix { }";
       description = "The nbd-vram package to use.";
     };
 
